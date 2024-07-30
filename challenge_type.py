@@ -85,7 +85,7 @@ class DynamicValueDockerChallenge(BaseChallenge):
             q = q.filter(WhaleContainer.challenge_id == challenge.id)
             records = q.all()
             if len(records) == 0:
-                return False, "Please solve it during the container is running"
+                return False, "Please solve it while the container is running"
 
             container = records[0]
             if container.flag == submission:

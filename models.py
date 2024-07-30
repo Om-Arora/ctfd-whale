@@ -1,11 +1,12 @@
 import random
 import uuid
+import hashlib
 from datetime import datetime
 
 from jinja2 import Template
 
 from CTFd.utils import get_config
-from CTFd.models import db
+from CTFd.models import db, Flags, Challenges, Users
 from CTFd.plugins.dynamic_challenges import DynamicChallenge
 
 
@@ -67,7 +68,8 @@ class WhaleContainer(db.Model):
 
     # Relationships
     user = db.relationship(
-        "Users", foreign_keys="WhaleContainer.user_id", lazy="select")
+        "Users", foreign_keys="WhaleContainer.user_id", lazy="select"
+    )
     challenge = db.relationship(
         "DynamicDockerChallenge", foreign_keys="WhaleContainer.challenge_id", lazy="select"
     )
@@ -84,9 +86,35 @@ class WhaleContainer(db.Model):
         self.start_time = datetime.now()
         self.renew_count = 0
         self.uuid = str(uuid.uuid4())
-        self.flag = Template(get_config(
-            'whale:template_chall_flag', '{{ "flag{"+uuid.uuid4()|string+"}" }}'
-        )).render(container=self, uuid=uuid, random=random, get_config=get_config)
+
+        # THIS DOES NOT CHECK WHETHER FLAG EXISTS ----- THAT IS ASSUMMED!
+        all_flags = Flags.query.filter_by(challenge_id=challenge_id)
+        existing_flag = all_flags.first()
+
+        user = Users.query.filter_by(id=user_id).first()
+        team_id = user.team_id
+
+        # Generate SHA-512 hash of the user ID
+        # BETTER TO ADD THIS SALT AS GET_CONFIG!!!!
+        hash_content = str(team_id) + str(challenge_id) + " salt for the custom flag feature of n00bzCTF 2024"
+        new_flag_content = hashlib.sha512(hash_content.encode()).hexdigest()[58:70] # 12 chars in the middle
+
+        new_flag_content = existing_flag.content.replace('REPLACETHIS', new_flag_content)
+
+        # Add the new flag to the challenge
+        new_flag = Flags(
+            challenge_id=challenge_id,
+            type='static',  # 'static' is one type of flag; other types are 'regex', 'dynamic', etc.
+            content=new_flag_content,
+            data=''
+        )
+
+        if all_flags.filter_by(content=new_flag_content).first() is None:
+            db.session.add(new_flag)
+            db.session.commit()
+
+        self.flag = Template(new_flag_content).render(container=self, uuid=uuid, random=random, get_config=get_config)
+
 
     @property
     def user_access(self):
