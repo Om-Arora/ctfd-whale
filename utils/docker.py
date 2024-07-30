@@ -64,10 +64,36 @@ class DockerUtils:
             get_config("whale:docker_swarm_nodes", "").split(",")
         )
 
+        if container.challenge.docker_image.find('FLAG-ENV') != -1:
+            # FLAG MUST BE IN THE ENVIRONMENT
+            kwargs = {
+                'env': {
+                    'FLAG': container.flag
+                    }
+                }
+        else:
+            # FLAG MUST BE A FILE, USE SECRETS
+            flag_secret_id = client.secrets.create(
+                name=f'{container.user_id}-{container.uuid}-FLAG',
+                data=container.flag+'\n'
+            )
+            kwargs = {
+                'secrets': [
+                    docker.types.SecretReference(
+                        flag_secret_id.id,
+                        f'{container.user_id}-{container.uuid}-FLAG',
+                        filename='/flag.txt',
+                        uid=0,
+                        gid=0,
+                        mode=0o444
+                    )
+                ]
+            }
+
         client.services.create(
             image=container.challenge.docker_image,
             name=f'{container.user_id}-{container.uuid}',
-            env={'FLAG': container.flag}, dns_config=docker.types.DNSConfig(nameservers=dns),
+            dns_config=docker.types.DNSConfig(nameservers=dns),
             networks=[get_config("whale:docker_auto_connect_network", "ctfd_frp-containers")],
             resources=docker.types.Resources(
                 mem_limit=DockerUtils.convert_readable_text(
@@ -78,7 +104,8 @@ class DockerUtils:
                 'whale_id': f'{container.user_id}-{container.uuid}'
             },  # for container deletion
             constraints=['node.labels.name==' + node],
-            endpoint_spec=docker.types.EndpointSpec(mode='dnsrr', ports={})
+            endpoint_spec=docker.types.EndpointSpec(mode='dnsrr', ports={}),
+            **kwargs
         )
 
     @staticmethod
@@ -147,6 +174,7 @@ class DockerUtils:
     @staticmethod
     def remove_container(container):
         whale_id = f'{container.user_id}-{container.uuid}'
+        flag_name = f'{whale_id}-FLAG'
 
         for s in DockerUtils.client.services.list(filters={'label': f'whale_id={whale_id}'}):
             s.remove()
@@ -163,6 +191,10 @@ class DockerUtils:
                         pass
                 redis_util.add_available_network_range(network.attrs['Labels']['prefix'])
                 network.remove()
+
+        for s in DockerUtils.client.secrets.list(filters={'name': flag_name}):
+            s.remove()
+
 
     @staticmethod
     def convert_readable_text(text):
