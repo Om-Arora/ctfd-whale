@@ -91,4 +91,55 @@
             <option value="1" {% if challenge.dynamic_score == 1 %}selected{% endif %}>Dynamic Score</option>
         </select>
     </div>
+
+
+    <div class="form-group">
+        <label for="value">Flag Mount Type<br>
+            <small class="form-text text-muted">
+                Decide if flag is a file or environment variable
+            </small>
+        </label>
+
+        <select class="form-control" name="flag_type" oncanplay="" onchange="toggleFlagFields();">
+            <option value="0" {% if challenge.flag_type == 0 %}selected{% endif %}>File</option>
+            <option value="1" {% if challenge.flag_type == 1 %}selected{% endif %}>Environment Variable</option>
+        </select>
+    </div>
+
+    <div class="form-group flag-file">
+        <label for="value">Filename<br>
+            <small class="form-text text-muted">
+                The absolute path to the flag (default /flag.txt)
+            </small>
+        </label>
+        <input type="text" class="form-control" name="flag_path" placeholder="Enter the flag path" value="{{ challenge.flag_path }}">
+    </div>
+
+    <div class="form-group flag-file">
+        <label for="value">UID<br>
+            <small class="form-text text-muted">
+                UID of the user that owns the flag (default root)
+            </small>
+        </label>
+        <input type="number" class="form-control" name="flag_uid" placeholder="Enter the UID of flag owner" value="{{ challenge.flag_uid }}">
+    </div>
+
+    <div class="form-group flag-file">
+        <label for="value">GID<br>
+            <small class="form-text text-muted">
+                GID of the group that owns the flag (default root)
+            </small>
+        </label>
+        <input type="number" class="form-control" name="flag_gid" placeholder="Enter the GID of flag owner" value="{{ challenge.flag_gid }}">
+    </div>
+
+    <div class="form-group flag-file">
+        <label for="value">Flag permissions<br>
+            <small class="form-text text-muted">
+                The file permissions for the flag (default world-readable, non-writable)
+            </small>
+        </label>
+        <input type="text" class="form-control" name="flag_perms" placeholder="Enter the file permissions" value="{{ challenge.flag_perms }}">
+    </div>
+
 {% endblock %}

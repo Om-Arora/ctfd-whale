@@ -46,6 +46,13 @@ class DynamicDockerChallenge(DynamicChallenge):
     cpu_limit = db.Column(db.Float, default=0.5)
     dynamic_score = db.Column(db.Integer, default=0)
 
+    flag_type = db.Column(db.Integer, default=0)
+    flag_path = db.Column(db.Text, default="/flag.txt")
+    flag_uid = db.Column(db.Integer, default=0)
+    flag_gid = db.Column(db.Integer, default=0)
+    flag_perms = db.Column(db.Text, default="444")
+
+
     docker_image = db.Column(db.Text, default=0)
     redirect_type = db.Column(db.Text, default=0)
     redirect_port = db.Column(db.Integer, default=0)
@@ -95,8 +102,7 @@ class WhaleContainer(db.Model):
         team_id = user.team_id
 
         # Generate SHA-512 hash of the user ID
-        # BETTER TO ADD THIS SALT AS GET_CONFIG!!!!
-        hash_content = str(team_id) + str(challenge_id) + " salt for the custom flag feature of n00bzCTF 2024"
+        hash_content = str(team_id) + str(challenge_id) + get_config('whale:flag_hash_suffix') 
         new_flag_content = hashlib.sha512(hash_content.encode()).hexdigest()[58:70] # 12 chars in the middle
 
         new_flag_content = existing_flag.content.replace('REPLACETHIS', new_flag_content)

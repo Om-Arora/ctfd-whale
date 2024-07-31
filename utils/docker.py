@@ -64,7 +64,7 @@ class DockerUtils:
             get_config("whale:docker_swarm_nodes", "").split(",")
         )
 
-        if container.challenge.docker_image.find('FLAG-ENV') != -1:
+        if container.challenge.flag_type == 1:
             # FLAG MUST BE IN THE ENVIRONMENT
             kwargs = {
                 'env': {
@@ -82,10 +82,10 @@ class DockerUtils:
                     docker.types.SecretReference(
                         flag_secret_id.id,
                         f'{container.user_id}-{container.uuid}-FLAG',
-                        filename='/flag.txt',
-                        uid=0,
-                        gid=0,
-                        mode=0o444
+                        filename=container.challenge.flag_path,
+                        uid=container.challenge.flag_uid,
+                        gid=container.challenge.flag_gid,
+                        mode=int(f'0o{container.challenge.flag_perms}', 8)
                     )
                 ]
             }

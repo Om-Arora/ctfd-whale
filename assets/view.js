@@ -47,7 +47,7 @@ function loadInfo() {
         });
         if (response.remaining_time != undefined) {
             $('#whale-challenge-user-access').html(response.user_access);
-            $('#whale-challenge-lan-domain').html(response.lan_domain);
+            // $('#whale-challenge-lan-domain').html(response.lan_domain);
             $('#whale-challenge-count-down').text(response.remaining_time);
             $('#whale-panel-stopped').hide();
             $('#whale-panel-started').show();

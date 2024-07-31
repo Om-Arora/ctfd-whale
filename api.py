@@ -82,7 +82,7 @@ class UserContainers(Resource):
         return {
             'success': True,
             'data': {
-                'lan_domain': str(user_id) + "-" + container.uuid,
+                # 'lan_domain': str(user_id) + "-" + container.uuid,
                 'user_access': Router.access(container),
                 'remaining_time': timeout - (datetime.now() - container.start_time).seconds,
             }

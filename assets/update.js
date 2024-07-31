@@ -50,3 +50,22 @@ function openchal(id) {
 $(document).ready(function() {
     $('[data-toggle="tooltip"]').tooltip();
 });
+
+
+// Function to toggle visibility based on selected flag type
+function toggleFlagFields() {
+    let flagTypeSelect = document.querySelector('select[name="flag_type"]');
+    let flagFileFields = document.querySelectorAll('.flag-file');
+    
+    if (flagTypeSelect.value == "0") { // "File" selected
+        flagFileFields.forEach(field => field.style.display = 'block');
+    } else { // "Environment Variable" selected
+        flagFileFields.forEach(field => field.style.display = 'none');
+    }
+}
+
+// Initial check to set the correct visibility on page load
+toggleFlagFields();
+
+// Add event listener to the select element to toggle visibility on change
+flagTypeSelect.addEventListener('change', toggleFlagFields);
