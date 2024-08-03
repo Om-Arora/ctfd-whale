@@ -43,11 +43,18 @@ class DockerUtils:
                 'if you are using unix:///var/run/docker.sock, check if the socket is correctly mapped'
             )
         credentials = get_config("whale:docker_credentials")
-        if credentials and credentials.count(':') == 1:
+        if credentials: # and credentials.count(':') == 1:
             try:
-                DockerUtils.client.login(*credentials.split(':'))
-            except Exception:
-                raise WhaleError('docker.io failed to login, check your credentials')
+                # DockerUtils.client.login(
+                #     username=credentials.split(':')[0],
+                #     password=credentials.split(':')[1],
+                #     registry='https://registry.digitalocean.com'
+                # )
+                DockerUtils.client.login(username='', dockercfg_path='/opt/CTFd/CTFd/plugins/ctfd-whale/docker-config.json')
+            except Exception as e:
+                print(e)
+                raise WhaleError(f'docker.io failed to login, check your credentials: {e}')
+
 
     @staticmethod
     def add_container(container):
